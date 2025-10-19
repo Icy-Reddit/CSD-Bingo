@@ -8,6 +8,7 @@
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
@@ -138,6 +139,20 @@
       .tile.len-sm{ font-size: clamp(12px, 3.6vw, 16px); }
       .tile.len-xs{ font-size: clamp(11px, 3.2vw, 15px); }
     }
+  
+    /* Typography & mobile rendering improvements */
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      font-family: Inter, Roboto, "Helvetica Neue", Arial, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+    /* Avoid GPU transforms on text containers */
+    .tile { will-change: auto; transform: none; }
+    /* Slightly tighter metrics for small tiles */
+    .tile { line-height: 1.2; letter-spacing: .2px; }
+
   </style>
 </head>
 <body>
@@ -457,6 +472,68 @@
         setTimeout(()=> btn.textContent=prev, 1200);
       }catch{ alert('Copy this link: '+url) }
     });
+  
+  /* === Text autosize for tiles: keeps letters readable on small tiles === */
+  (function(){
+    const TILE_SELECTOR = '.tile';
+    const BOARD_SELECTOR = '.board';
+
+    function fitTile(tile){
+      // Base on tile width; cap to reasonable range
+      const w = tile.clientWidth || 100;
+      // Start size ~12% of tile width, clamp 12..24px (tunable)
+      let size = Math.max(12, Math.min(24, Math.floor(w * 0.12)));
+      tile.style.lineHeight = '1.2';
+      tile.style.wordBreak = 'break-word';
+      tile.style.hyphens = 'auto';
+
+      // Apply and shrink until it fits without overflow
+      const fits = ()=> tile.scrollHeight <= tile.clientHeight && tile.scrollWidth <= tile.clientWidth;
+      tile.style.fontSize = size + 'px';
+      // Safety loop with lower bound 10px
+      let guard = 40;
+      while(guard-- > 0 && (!fits()) && size > 10){
+        size -= 1;
+        tile.style.fontSize = size + 'px';
+      }
+    }
+
+    function fitAll(){
+      document.querySelectorAll(TILE_SELECTOR).forEach(fitTile);
+    }
+
+    // ResizeObserver for per-tile resizes
+    const ro = new ResizeObserver(entries => {
+      for (const e of entries){ fitTile(e.target); }
+    });
+
+    function observeTiles(){
+      document.querySelectorAll(TILE_SELECTOR).forEach(t => ro.observe(t));
+    }
+
+    // MutationObserver: refit when board content changes (e.g., mode switch)
+    const mo = new MutationObserver(()=> { fitAll(); observeTiles(); });
+
+    function attachBoardObserver(){
+      const board = document.querySelector(BOARD_SELECTOR);
+      if(board){
+        mo.observe(board, { childList: true, subtree: false });
+      }
+    }
+
+    // Run after load (ensures original script finished rendering tiles)
+    window.addEventListener('load', ()=>{
+      fitAll();
+      observeTiles();
+      attachBoardObserver();
+    });
+
+    // Also on orientation changes (mobile portrait/landscape)
+    window.addEventListener('orientationchange', ()=>{
+      setTimeout(fitAll, 50);
+    });
+  })();
+
   </script>
 </body>
 </html>
