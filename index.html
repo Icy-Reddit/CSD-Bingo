@@ -11,8 +11,7 @@
 
   <style>
     :root{
-      --bg: linear-gradient(135deg, #ff6a00 0%, #ff9a00 40%, #ffd200 100%);
-      --panel: #fff7edcc;
+      --bg: #ff7a00;--panel: transparent;
 
       --accent: #ff4500;
       --tile-bg: #ffffff;
@@ -28,7 +27,7 @@
     html,body{ height:100% }
     body{
       margin:0;
-      background:var(--bg);
+      background: var(--bg);
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji");
       color:#222;
       display:flex; flex-direction:column; align-items:center;
@@ -93,10 +92,9 @@
 
     /* Dark mode */
     .dark body, body.dark{
-      --bg: linear-gradient(135deg, #0f1115 0%, #141922 60%, #1c2230 100%);
-      --tile-bg:#1a1d24; --tile-text:#e9eef5; --tile-border:#2a2f3a;
+      --bg: #ff7a00;--tile-bg:#1a1d24; --tile-text:#e9eef5; --tile-border:#2a2f3a;
       --done-bg:#55bd46; --done-text:#ffffff; --done-border:#4caa3f;
-      --panel:#12151bcc; color:#e9eef5;
+      --panel: transparent; color:#e9eef5;
     }
     body.dark .wrap{ background:var(--panel) }
     body.dark button{ background:#1a1d24; color:#e9eef5; border-color:#2a2f3a }
@@ -227,7 +225,7 @@
       "FATEFUL JEWELRY A.K.A. JADE BRACELET",
       "IT’S NOT WHAT IT LOOKS LIKE!",
       "GRANDMA KNOWS EVERYTHING",
-      "‘I’LL MARRY YOU TO SAVE COMPANY / FAMILY’",
+      "I’LL MARRY YOU TO SAVE COMPANY / FAMILY",
       "AIRPORT CHASE",
       "HIT BY A SLOW-MOVING CAR",
       "DOCTOR / POLICE / MEDICINE FROM NOWHERE",
