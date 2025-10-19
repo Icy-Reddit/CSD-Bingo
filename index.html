@@ -24,15 +24,28 @@
 
       --shadow: 0 4px 16px rgba(0,0,0,.08);
     }
+
     *{ box-sizing:border-box }
-    html,body{ height:100% }
+
+    /* ✅ Mobilne: stabilne tło (brak „przepołowienia”) */
+    html,body{ min-height:100%; height:auto }
     body{
       margin:0;
-      background:var(--bg);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji");
+      background:none; /* gradient na stałej warstwie poniżej */
+      position: relative;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
       color:#222;
       display:flex; flex-direction:column; align-items:center;
       padding:24px 16px 48px;
+    }
+    body::before{
+      content:"";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background: var(--bg);
+      transform: translateZ(0);
+      will-change: transform;
     }
 
     header{ width:min(1200px,96vw); display:flex; gap:16px; align-items:center; justify-content:space-between; margin-bottom:16px }
@@ -40,7 +53,7 @@
     .dot{ width:14px; height:14px; border-radius:50%; background:var(--accent); box-shadow:var(--shadow) }
 
     h1{ margin:0; letter-spacing:0.3px; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap }
-    /* dark & strong BINGO title for contrast */
+    /* Wyraźne ciemne BINGO */
     .logo-fancy{
       font-family:'Ma Shan Zheng', "Noto Serif SC", system-ui, sans-serif;
       font-size:clamp(44px, 7.5vw, 96px);
@@ -64,7 +77,29 @@
     .segmented button.active{ background:#111; color:#fff }
     .counter{ font-size:13px; color:#555; margin-left:8px }
 
-    .wrap{ width:min(1200px,96vw); background:var(--panel); backdrop-filter: blur(6px); padding:16px; border-radius:18px; box-shadow:var(--shadow); border:1px solid #f0f0f0 }
+    /* ✅ Mobilne: panel z blur + fallback */
+    .wrap{
+      width:min(1200px,96vw);
+      background:var(--panel);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      padding:16px; border-radius:18px; box-shadow:var(--shadow); border:1px solid #f0f0f0
+    }
+    @supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+      .wrap{
+        background: #fff7ed; /* pełny kolor bez przezroczystości */
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+    }
+    @media (max-width: 680px){
+      .wrap{
+        background: #fff7ed; /* na małych ekranach też pełny */
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+    }
+
     .board{ display:grid; gap:10px }
     .cols-5{ grid-template-columns: repeat(5, 1fr) }
     .cols-6{ grid-template-columns: repeat(6, 1fr) }
@@ -75,6 +110,8 @@
       display:flex; align-items:center; justify-content:center; text-align:center;
       font-weight:700; font-size: clamp(11px, 1.15vw, 16px); line-height:1.25;
       user-select:none; transition:background .15s ease, border-color .15s ease, color .15s ease, transform .05s ease, box-shadow .15s ease;
+      background-clip: padding-box;             /* ✅ brak prześwitów na krawędziach */
+      -webkit-tap-highlight-color: transparent; /* ✅ ładniejszy tap na mobile */
     }
     .tile:hover{ transform: translateY(-1px) }
     .tile.done{ background:var(--done-bg); color:var(--done-text); border-color:var(--done-border) }
@@ -85,7 +122,7 @@
     .toast span{ pointer-events:auto; background:#000; color:#fff; padding:12px 18px; border-radius:14px; font-weight:800; box-shadow:0 10px 30px rgba(0,0,0,.25); opacity:0; transform: translateY(10px) scale(.98); transition: all .2s ease }
     .toast.show span{ opacity:1; transform: translateY(0) scale(1) }
 
-    /* BIG CENTER POPUP "BINGO!" */
+    /* Duży rosnący pop-up "BINGO!" */
     .center-pop{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:60 }
     .center-pop span{ font-weight:900; font-size:clamp(72px, 13vw, 200px); color:#fff; text-shadow:0 6px 24px rgba(0,0,0,.75), 0 0 10px rgba(0,0,0,.7); opacity:0; transform:scale(.55) }
     .center-pop.show span{ animation:pop .95s ease-out forwards }
@@ -144,7 +181,7 @@
     const TERMS_CLASSIC = [
       "FORCED TO DRINK OR DRUGGED",
       "WHITE MOONLIGHT",
-      "FL MARRIES SML’S RELATIVE / FRIEND",
+      "FL MARRIES SML’S RELATIVE/FRIEND",
       "ML DOESN’T RECOGNIZE FL",
       "FORCED MAKE-OUT",
       "SFL STEALS FL’S IDENTITY",
@@ -156,13 +193,13 @@
       "YOU HIT ME?!",
       "EPIC ENTRANCE: CAR CONVOY",
       "GREEN TEA / WHITE LOTUS",
-      "ML CARRIES / PICKS UP / PULLS INTO LAP FL",
+      "ML CARRIES/PICKS UP/PULLS INTO LAP FL",
       "ALLERGIC TO [ANYTHING]",
       "LOVED ONE TAKES THE WRONG SIDE / CHEATS",
       "AMNESIA PLOT",
       "TIME-TRAVEL PLOT",
       "ARRANGED MARRIAGE",
-      "MARRIES CEO / BILLIONAIRE / MAFIA BOSS",
+      "MARRIES CEO/BILLIONAIRE/MAFIA BOSS",
       "REBORN / REINCARNATION",
       "THERE’S AN AUCTION",
       "SECRET CHILD[REN]",
@@ -197,29 +234,29 @@
       "HIT BY A SLOW-MOVING CAR",
     ];
 
-    /* === MADNESS (dokładnie 36 haseł; Twoja nowa lista) === */
+    /* === MADNESS (Twoja lista 36; 6×6) === */
     const TERMS_MADNESS = [
       "FORCED TO DRINK OR DRUGGED",
       "WHITE MOONLIGHT / GREEN TEA (WHITE LOTUS)",
-      "MARRIES HIS RELATIVE / FRIEND",
-      "FALLS FOR FAKE SAVIOR / FORGETS CHILDHOOD SWEETHEART",
+      "FL MARRIES SML’S RELATIVE/FRIEND",
+      "FALLS FOR FAKE SAVIOR",
       "PARTY BULLYING SCENE",
-      "KIDNAPPING",
+      "SFL STEALS FL’S IDENTITY",
       "EVIL OR UNGRATEFUL (STEP) FAMILY",
-      "FORCED TO DONATE ORGAN / BLOOD",
+      "FORCED TO DONATE ORGAN/BLOOD",
       "WEDDING GETS CRASHED",
       "KNIFE OF FORGIVENESS",
-      "REGRETS / OBSESSED AFTER BREAKUP",
+      "REGRETS/OBSESSED AFTER BREAKUP",
       "YOU HIT ME?!",
       "EPIC ENTRANCE: CAR CONVOY",
-      "ACCIDENTAL KISS / SEX / PREGNANCY",
-      "GRAB HER AND GO",
+      "ACCIDENTAL KISS/SEX/PREGNANCY",
+      "ML CARRIES/PICKS UP/PULLS INTO LAP FL",
       "ALLERGIC TO [ANYTHING]",
-      "HIDDEN / STOLEN IDENTITY",
+      "HIDDEN/STOLEN IDENTITY",
       "AMNESIA",
-      "POPULAR KDRAMA SONG",
+      "TIME-TRAVEL PLOT",
       "ARRANGED MARRIAGE",
-      "MARRIES CEO / BILLIONAIRE / MAFIA BOSS",
+      "MARRIES CEO/BILLIONAIRE/MAFIA BOSS",
       "REBORN / TIME-TRAVEL",
       "THERE’S AN AUCTION",
       "SECRET CHILD[REN]",
@@ -227,11 +264,11 @@
       "FATEFUL JEWELRY A.K.A. JADE BRACELET",
       "IT’S NOT WHAT IT LOOKS LIKE!",
       "GRANDMA KNOWS EVERYTHING",
-      "I’LL MARRY YOU TO SAVE COMPANY / FAMILY",
+      "‘I’LL MARRY YOU TO SAVE COMPANY/FAMILY’",
       "AIRPORT CHASE",
       "HIT BY A SLOW-MOVING CAR",
-      "DOCTOR / POLICE / MEDICINE FROM NOWHERE",
-      "PAPER CONFETTI MOMENT",
+      "DOCTOR/POLICE/MEDICINE FROM NOWHERE",
+      "DIVORCES SCUM; MARRIES KIN",
       "STOMACH ISSUES",
       "ONLY ONE DRESS",
       "DRAMATIC FALL & CRY",
@@ -244,7 +281,7 @@
     let seed = params.get('seed') || Math.random().toString(36).slice(2, 10);
 
     const SIZE_FOR = (m)=> m==='madness' ? 6 : 5;
-    const STORAGE_KEY = (s,m)=> `cdrama-bingo-v6-${m}-${s}`;
+    const STORAGE_KEY = (s,m)=> `cdrama-bingo-v7-${m}-${s}`;
 
     function mulberry32(a){ return function(){ var t=a+=0x6D2B79F5; t=Math.imul(t^t>>>15,t|1); t^=t+Math.imul(t^t>>>7,t|61); return ((t^t>>>14)>>>0)/4294967296 } }
     function hashStrToInt(str){ let h=2166136261>>>0; for(let i=0;i<str.length;i++){ h^=str.charCodeAt(i); h=Math.imul(h,16777619) } return h>>>0 }
@@ -258,7 +295,7 @@
     function termsForMode(){
       if(mode==='classic') return TERMS_CLASSIC;
       if(mode==='chaotic') return TERMS_CHAOTIC;
-      return TERMS_MADNESS; // dokładnie 36; tasujemy kolejność
+      return TERMS_MADNESS; // 36 pozycji; tasujemy kolejność
     }
 
     function saveState(seedStr, doneSet){ const data={done:[...doneSet]}; localStorage.setItem(STORAGE_KEY(seedStr,mode), JSON.stringify(data)) }
@@ -309,7 +346,7 @@
 
       const pool = termsForMode();
       const list = (mode==='madness')
-        ? shuffleWithSeed(pool, seed).slice(0, 36)        // MADNESS: tasuje kolejność tych 36
+        ? shuffleWithSeed(pool, seed).slice(0, 36)       // MADNESS: tasuje kolejność tych 36
         : shuffleWithSeed(pool, seed).slice(0, size*size);
 
       const done = loadState(seed);
@@ -335,7 +372,7 @@
       prevBingoCount = 0;
       updateBingo(done);
 
-      // byline + edition pill + shuffle availability
+      // Byline + edition + shuffle
       const edition = document.getElementById('edition');
       const byline = document.getElementById('byline');
       const shuffleBtn = document.getElementById('shuffle');
@@ -354,7 +391,7 @@
         edition.textContent='Madness Edition';
         byline.textContent="by CShortDramas’ Members";
         edition.style.display='inline-block';
-        shuffleBtn.disabled=false; shuffleBtn.title='Shuffle a new board';   // Madness aktywny
+        shuffleBtn.disabled=false; shuffleBtn.title='Shuffle a new board';
       }
     }
 
@@ -386,7 +423,7 @@
 
     // INIT
     (function init(){
-      applyTheme();
+      const t=localStorage.getItem(THEME_KEY); if(t==='dark') document.body.classList.add('dark');
       document.getElementById('btnClassic').classList.toggle('active', mode==='classic');
       document.getElementById('btnClassic').setAttribute('aria-selected', mode==='classic');
       document.getElementById('btnChaotic').classList.toggle('active', mode==='chaotic');
@@ -407,7 +444,7 @@
     });
 
     document.getElementById('clear').addEventListener('click', ()=>{
-      localStorage.removeItem( STORAGE_KEY(seed, mode) );
+      localStorage.removeItem( `cdrama-bingo-v7-${mode}-${seed}` );
       render();
     });
 
@@ -426,10 +463,10 @@
       localStorage.setItem(THEME_KEY, dark ? 'dark' : 'light');
     });
 
-    // AUTO-CLEAR ON EXIT (opcjonalne; usuń jeśli chcesz zapamiętywać stan)
+    /* AUTO-CLEAR ON EXIT (opcjonalne — usuń jeśli chcesz zachowywać stan) */
     function clearAllStatesForCurrentSeed(){
       ['classic','chaotic','madness'].forEach(m=>{
-        try{ localStorage.removeItem(`cdrama-bingo-v6-${m}-${seed}`) }catch{}
+        try{ localStorage.removeItem(`cdrama-bingo-v7-${m}-${seed}`) }catch{}
       });
     }
     window.addEventListener('beforeunload', clearAllStatesForCurrentSeed);
