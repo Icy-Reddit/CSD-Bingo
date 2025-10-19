@@ -162,7 +162,19 @@
     <div class="center-pop" id="centerPop" aria-hidden="true"><span>BINGO!</span></div>
     <div class="toast" aria-live="assertive" aria-atomic="true"><span id="bingoMsg">BINGO!</span></div>
   </div>
-
+/* --- MOBILE UNIFORM TILES --- */
+@media (max-width: 680px){
+  .board{ align-items: stretch; }
+  .tile{
+    aspect-ratio: 1 / 1;                  /* kwadrat – wszystkie równe */
+    min-height: auto;                     /* usuń minimalną wysokość */
+    height: auto;
+    padding: 10px;
+    font-size: clamp(10px, 2.9vw, 13px);  /* trochę mniejszy tekst */
+    word-break: break-word;
+    hyphens: auto;
+  }
+}
   <script>
     /* === TERMS (tile texts) === */
     const TERMS_CLASSIC = [
